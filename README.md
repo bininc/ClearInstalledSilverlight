@@ -1,0 +1,2 @@
+# ClearInstalledSilverlight
+清理电脑上已经安装的Silverlight浏览器外程序
