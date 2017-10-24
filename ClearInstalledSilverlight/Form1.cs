@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -39,10 +38,23 @@ namespace ClearInstalledSilverlight
 
             string[] regs = Directory.GetDirectories(path);
             RegistryKey uninstallKey = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall", true);
+
+            string deskTop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+            string programs = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
+            List<string> shortCuts = new List<string>();
+
             foreach (string reg in regs)
             {
                 string tmp = Path.GetFileName(reg);
                 if (tmp == "index") continue;
+                object dName = uninstallKey.OpenSubKey(tmp).GetValue("DisplayName");
+                if (dName != null)
+                {
+                    string[] shortcutPaths = Directory.GetFiles(deskTop, dName+"*.lnk", SearchOption.TopDirectoryOnly);
+                    shortCuts.AddRange(shortcutPaths);
+                    shortcutPaths = Directory.GetFiles(programs, dName+"*.lnk", SearchOption.TopDirectoryOnly);
+                    shortCuts.AddRange(shortcutPaths);
+                }
                 uninstallKey.DeleteSubKey(tmp, false);
             }
             uninstallKey.Close();
@@ -82,23 +94,6 @@ namespace ClearInstalledSilverlight
                         Directory.Delete(file, true);
                     }
                 }
-
-                string deskTop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-                string programs = Environment.GetFolderPath(Environment.SpecialFolder.Programs);
-
-                List<string> shortCuts = new List<string>();
-                string[] shortcutPaths = Directory.GetFiles(deskTop, "监控端*.lnk", SearchOption.TopDirectoryOnly);
-                shortCuts.AddRange(shortcutPaths);
-                shortcutPaths = Directory.GetFiles(programs, "监控端*.lnk", SearchOption.TopDirectoryOnly);
-                shortCuts.AddRange(shortcutPaths);
-                shortcutPaths = Directory.GetFiles(deskTop, "接警平台*.lnk", SearchOption.TopDirectoryOnly);
-                shortCuts.AddRange(shortcutPaths);
-                shortcutPaths = Directory.GetFiles(programs, "接警平台*.lnk", SearchOption.TopDirectoryOnly);
-                shortCuts.AddRange(shortcutPaths);
-                shortcutPaths = Directory.GetFiles(deskTop, "110接警*.lnk", SearchOption.TopDirectoryOnly);
-                shortCuts.AddRange(shortcutPaths);
-                shortcutPaths = Directory.GetFiles(programs, "110接警*.lnk", SearchOption.TopDirectoryOnly);
-                shortCuts.AddRange(shortcutPaths);
 
                 foreach (string shortCut in shortCuts)
                 {
